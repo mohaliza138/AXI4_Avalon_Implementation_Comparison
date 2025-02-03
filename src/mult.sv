@@ -17,16 +17,21 @@ module mult #(
         if (_rst) begin
             res   <= 0;
             ready <= 0;
-            areg  <= a;
-            breg  <= {{SZ{1'b0}}, b};
+            areg  <= 0;
+            breg  <= 0;
         end
         else begin
             if (start) begin
                 res   <= 0;
                 ready <= 0;
+                areg  <= a;
+                breg  <= {{SZ{1'b0}}, b};
             end
             else begin
-
+                areg  <= areg >> 1;
+                breg  <= breg << 1;
+                ready <= ~|areg;
+                res   <= res + (breg & {2 * SZ{areg[0]}});
             end
         end
     end
