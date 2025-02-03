@@ -1,0 +1,7 @@
+./src/avalon_mm_wrapper.v
+./src/avalon_st_wrapper.v
+./src/axi4_lite_wrapper.v
+./src/axi4_stream_wrapper.v
+./src/axi4_wrapper.v
+./src/mult.v
+./src/tb.v
