@@ -16,9 +16,9 @@ module mult_tb;
     initial begin
         $monitor($time, " | ", a, " * ", b, " => ", ready, " , ", res);
         clk  = 0;
-        _rst = 1;
-        #1 clk = !clk;
         _rst = 0;
+        #1 clk = !clk;
+        _rst = 1;
         a = 12;
         b = 7;
         start = 1;
