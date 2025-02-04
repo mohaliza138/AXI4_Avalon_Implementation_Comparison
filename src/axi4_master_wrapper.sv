@@ -35,66 +35,42 @@ module axi4_master_wrapper #(
 );
     assign out_clk = clk;
 
-    reg [DSZ-1:0] inregs[(1<<ASZ) * (SZ/DSZ)];
-    reg start;
+    wire [DSZ-1:0] outregs[(2) * (SZ / DSZ)];
+    assign outregs = {a[7:0], a[15:8], a[23:16], a[31:24], b[7:0], b[15:8], b[23:16], b[31:24]};
 
-    wire [DSZ-1:0] outregs[2*SZ/DSZ];
-    wire mulready;
 
-    reg [ASZ-1:0] awaddr_reg;
-    reg [ASZ-1:0] araddr_reg;
     reg [7:0] wpos;
-    reg [7:0] rpos;
     always @(posedge clk, negedge _rst) begin
         if (~_rst) begin
-            // zero all regs
-            awready <= 1;  // accept write req
-            arready <= 1;  // accept read req
+            // setup data write
+            awaddr  <= 0;
+            awvalid <= 1;
         end
         else begin
-            if (awready & awvalid) begin
-                awaddr_reg <= awaddr;
-                wpos <= awaddr * (SZ / DSZ);
-                awready <= 0;  // end addr read
-                wready <= 1;  // begin data write
+
+            if (awvalid & awready) begin
+                awvalid <= 0;
+                wdata   <= outregs[awaddr * 4];
+                wpos    <= awaddr * 4 + 1;
+                wvalid  <= 1;
+                wlast   <= 0;
             end
-            if (wready & wvalid) begin  // writing
-                inregs[wpos] <= wdata;  // write to selected byte of input
-                wpos <= wpos + 1;
+            if (wvalid & wready) begin
+                wdata <= outregs[wpos];
+                wpos  <= wpos + 1;
+                wlast <= ((wpos & 3) == 2);
             end
-            if (wready & wvalid & wlast) begin
-                wready <= 0;  // end data write
-                bresp  <= 1;  // begin write resp
-                bvalid <= 1;
+            if (wvalid & wready & wlast) begin
+                wvalid <= 0;
+                wlast  <= 0;
+                wdata  <= 0;
+                bready <= 1;
             end
             if (bready & bvalid) begin
-                bvalid  <= 0;  // end write resp
-                awready <= 1;  // begin addr read
+                bready  <= 0;
+                awvalid <= 1;
+                awaddr  <= (awaddr + 1) & 1;
             end
-
-
-            if (arready & arvalid & mulready) begin
-                araddr_reg <= araddr;
-                arready <= 0;  // end addr read
-                rdata <= outregs[0];  // begin data read
-                rpos <= 0 + 1;
-                rvalid <= 1;
-                rresp <= 1;
-                rlast <= 0;
-            end
-            if (rready & rvalid) begin
-                rdata <= outregs[rpos];
-                rpos  <= rpos + 1;
-                rlast <= rpos == (2 * SZ / DSZ - 1);
-            end
-            if (rready & rvalid & rlast) begin
-                rvalid  <= 0;  // end data read
-                rdata   <= 0;
-                rlast   <= 0;
-                rresp   <= 0;
-                arready <= 1;  // begin addr read
-            end
-
         end
     end
 
