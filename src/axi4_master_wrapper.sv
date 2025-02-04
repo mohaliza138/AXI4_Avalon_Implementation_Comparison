@@ -36,7 +36,14 @@ module axi4_master_wrapper #(
     assign out_clk = clk;
 
     wire [DSZ-1:0] outregs[(2) * (SZ / DSZ)];
-    assign outregs = {a[7:0], a[15:8], a[23:16], a[31:24], b[7:0], b[15:8], b[23:16], b[31:24]};
+    assign outregs[0] = a[7:0];
+    assign outregs[1] = a[15:8];
+    assign outregs[2] = a[23:16];
+    assign outregs[3] = a[31:24];
+    assign outregs[4] = b[7:0];
+    assign outregs[5] = b[15:8];
+    assign outregs[6] = b[23:16];
+    assign outregs[7] = b[31:24];
 
     reg [DSZ-1:0] inregs[2 * SZ / DSZ];
     assign res = {
@@ -46,18 +53,31 @@ module axi4_master_wrapper #(
 
     reg [7:0] wpos;
     reg [7:0] rpos;
+    int i;
     always @(posedge clk, negedge _rst) begin
         if (~_rst) begin
+            wdata  <= 0;
+            wvalid <= 0;
+            wlast  <= 0;
+            bready <= 0;
+            rready <= 0;
+            for (i = 0; i < 2 * SZ / DSZ; i = i + 1) begin
+                inregs[i] <= 0;
+            end
+            wpos <= 0;
+            rpos <= 0;
             // setup data write
-            awaddr  <= 0;
+            awaddr <= 0;
             awvalid <= 1;
             // setup result read
-            araddr  <= 0;
-            awvalid <= 1;
+            araddr <= 0;
+            arvalid <= 1;
         end
         else begin
 
             if (awvalid & awready) begin
+                $display($time, " | master | ", "snd wdata : ", outregs[awaddr*4], " ind : %1d",
+                         awaddr * 4);
                 awvalid <= 0;
                 wdata   <= outregs[awaddr * 4];
                 wpos    <= awaddr * 4 + 1;
@@ -65,6 +85,7 @@ module axi4_master_wrapper #(
                 wlast   <= 0;
             end
             if (wvalid & wready) begin
+                $display($time, " | master | ", "snd wdata : ", outregs[wpos], " ind : %1d", wpos);
                 wdata <= outregs[wpos];
                 wpos  <= wpos + 1;
                 wlast <= ((wpos & 3) == 3);
@@ -76,18 +97,20 @@ module axi4_master_wrapper #(
                 bready <= 1;
             end
             if (bready & bvalid) begin
-                $display($time, " | ", "bresp : ", bresp);
+                $display($time, " | master | ", "bresp : ", bresp);
                 bready  <= 0;
                 awvalid <= 1;
                 awaddr  <= (awaddr + 1) & 1;
             end
 
             if (arvalid & arready) begin
+                $display($time, " | master | ", "res : ", res);
                 arvalid <= 0;
                 rpos    <= 0;
                 rready  <= 1;
             end
             if (rready & rvalid) begin
+                $display($time, " | master | ", "rcv rdata : ", rdata, " ind : %1d", rpos);
                 inregs[rpos] <= rdata;
                 rpos <= rpos + 1;
             end
