@@ -58,7 +58,7 @@ module axi4_master_wrapper #(
             if (wvalid & wready) begin
                 wdata <= outregs[wpos];
                 wpos  <= wpos + 1;
-                wlast <= ((wpos & 3) == 2);
+                wlast <= ((wpos & 3) == 3);
             end
             if (wvalid & wready & wlast) begin
                 wvalid <= 0;
@@ -71,6 +71,8 @@ module axi4_master_wrapper #(
                 awvalid <= 1;
                 awaddr  <= (awaddr + 1) & 1;
             end
+
+
         end
     end
 

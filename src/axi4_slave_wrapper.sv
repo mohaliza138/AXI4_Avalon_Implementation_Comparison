@@ -122,7 +122,7 @@ module axi4_slave_wrapper #(
             if (rready & rvalid) begin
                 rdata <= outregs[rpos];
                 rpos  <= rpos + 1;
-                rlast <= rpos == (2 * SZ / DSZ - 2);
+                rlast <= rpos == (2 * SZ / DSZ - 1);
             end
             if (rready & rvalid & rlast) begin
                 rvalid  <= 0;  // end data read
