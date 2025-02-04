@@ -62,9 +62,29 @@ module axi4_slave_wrapper #(
     reg [ASZ-1:0] araddr_reg;
     reg [7:0] wpos;
     reg [7:0] rpos;
+
+    int i;
     always @(posedge clk, negedge _rst) begin
         if (~_rst) begin
             // zero all regs
+            wpos <= 0;
+            rpos <= 0;
+            awaddr_reg <= 0;
+            araddr_reg <= 0;
+            for (i = 0; i < (1 << ASZ) * (SZ / DSZ); i = i + 1) begin
+                inregs[i] <= 0;
+            end
+            start   <= 1;
+
+            wready  <= 0;
+            bresp   <= 0;
+            bvalid  <= 0;
+            rdata   <= 0;
+            rvalid  <= 0;
+            rlast   <= 0;
+            rresp   <= 0;
+
+
             awready <= 1;  // accept write req
             arready <= 1;  // accept read req
         end
