@@ -38,12 +38,21 @@ module axi4_master_wrapper #(
     wire [DSZ-1:0] outregs[(2) * (SZ / DSZ)];
     assign outregs = {a[7:0], a[15:8], a[23:16], a[31:24], b[7:0], b[15:8], b[23:16], b[31:24]};
 
+    reg [DSZ-1:0] inregs[2 * SZ / DSZ];
+    assign res = {
+        inregs[7], inregs[6], inregs[5], inregs[4], inregs[3], inregs[2], inregs[1], inregs[0]
+    };
+
 
     reg [7:0] wpos;
+    reg [7:0] rpos;
     always @(posedge clk, negedge _rst) begin
         if (~_rst) begin
             // setup data write
             awaddr  <= 0;
+            awvalid <= 1;
+            // setup result read
+            araddr  <= 0;
             awvalid <= 1;
         end
         else begin
@@ -67,11 +76,25 @@ module axi4_master_wrapper #(
                 bready <= 1;
             end
             if (bready & bvalid) begin
+                $display($time, " | ", "bresp : ", bresp);
                 bready  <= 0;
                 awvalid <= 1;
                 awaddr  <= (awaddr + 1) & 1;
             end
 
+            if (arvalid & arready) begin
+                arvalid <= 0;
+                rpos    <= 0;
+                rready  <= 1;
+            end
+            if (rready & rvalid) begin
+                inregs[rpos] <= rdata;
+                rpos <= rpos + 1;
+            end
+            if (rready & rvalid & rlast) begin
+                rready  <= 0;
+                arvalid <= 1;
+            end
 
         end
     end
