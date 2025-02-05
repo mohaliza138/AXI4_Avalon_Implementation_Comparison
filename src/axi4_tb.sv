@@ -111,14 +111,11 @@ module axi4_tb;
     end
 
     initial begin
-        $display($time, " | ", a, " * ", b, " => ", res);
+        $monitor($time, " | tb | ", a, " * ", b, " => ", res);
         #8 _rst = 1;  // official start
-        a = 5;
-        b = 7;
-        #128;
-        a = 17;
-        b = 31;
-        #256 $finish();
+        a = 12551;
+        b = 41245;
+        #64 $finish();
     end
 
 endmodule
