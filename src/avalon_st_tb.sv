@@ -1,4 +1,4 @@
-module axi4_tb;
+module avalon_st_tb;
     localparam int SZ = 32;
     localparam int DSZ = 8;
     localparam int ASZ = 2;
