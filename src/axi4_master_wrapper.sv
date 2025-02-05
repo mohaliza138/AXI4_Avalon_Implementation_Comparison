@@ -1,3 +1,4 @@
+`include "src/flags.svh"
 module axi4_master_wrapper #(
     parameter int SZ  = 32,
     parameter int ASZ = 2,
@@ -76,8 +77,10 @@ module axi4_master_wrapper #(
         else begin
 
             if (awvalid & awready) begin
+`ifdef VERBOSE
                 $display($time, " | master | ", "snd wdata : ", outregs[awaddr*4], " ind : %1d",
                          awaddr * 4);
+`endif
                 awvalid <= 0;
                 wdata   <= outregs[awaddr * 4];
                 wpos    <= awaddr * 4 + 1;
@@ -85,7 +88,9 @@ module axi4_master_wrapper #(
                 wlast   <= 0;
             end
             if (wvalid & wready) begin
+`ifdef VERBOSE
                 $display($time, " | master | ", "snd wdata : ", outregs[wpos], " ind : %1d", wpos);
+`endif
                 wdata <= outregs[wpos];
                 wpos  <= wpos + 1;
                 wlast <= ((wpos & 3) == 3);
@@ -97,20 +102,26 @@ module axi4_master_wrapper #(
                 bready <= 1;
             end
             if (bready & bvalid) begin
+`ifdef VERBOSE
                 $display($time, " | master | ", "bresp : ", bresp);
+`endif
                 bready  <= 0;
                 awvalid <= 1;
                 awaddr  <= (awaddr + 1) & 1;
             end
 
             if (arvalid & arready) begin
+`ifdef VERBOSE
                 $display($time, " | master | ", "res : ", res);
+`endif
                 arvalid <= 0;
                 rpos    <= 0;
                 rready  <= 1;
             end
             if (rready & rvalid) begin
+`ifdef VERBOSE
                 $display($time, " | master | ", "rcv rdata : ", rdata, " ind : %1d", rpos);
+`endif
                 inregs[rpos] <= rdata;
                 rpos <= rpos + 1;
             end

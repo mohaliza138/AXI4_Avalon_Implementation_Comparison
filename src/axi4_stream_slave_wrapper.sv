@@ -1,3 +1,4 @@
+`include "src/flags.svh"
 module axi4_stream_slave_wrapper #(
     parameter int SZ  = 32,
     parameter int DSZ = 8
@@ -69,13 +70,17 @@ module axi4_stream_slave_wrapper #(
         end
         else begin
             if (tready_to_slave & tvalid_to_slave) begin
+`ifdef VERBOSE
                 $display($time, " | slave | ", "rcv tdata : ", tdata_to_slave, " ind : %1d", wpos);
+`endif
                 inregs[wpos] <= tdata_to_slave;
                 wpos <= tlast_to_slave ? 0 : wpos + 1;
             end
 
             if (tready_to_master & tvalid_to_master) begin
+`ifdef VERBOSE
                 $display($time, " | slave | ", "snd tdata : ", outregs[rpos], " ind : %1d", rpos);
+`endif
                 tdata_to_master <= outregs[rpos];
                 rpos <= (rpos + 1) & 7;
                 tlast_to_master <= rpos == 7;

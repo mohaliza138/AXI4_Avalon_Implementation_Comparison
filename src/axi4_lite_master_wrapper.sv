@@ -1,3 +1,4 @@
+`include "src/flags.svh"
 module axi4_lite_master_wrapper #(
     parameter int SZ  = 32,
     parameter int ASZ = 4,
@@ -69,8 +70,10 @@ module axi4_lite_master_wrapper #(
         else begin
 
             if (awvalid & awready) begin
+`ifdef VERBOSE
                 $display($time, " | master | ", "snd wdata : ", outregs[awaddr], " ind : %1d",
                          awaddr);
+`endif
                 awvalid <= 0;
                 wdata   <= outregs[awaddr];
                 wvalid  <= 1;
@@ -81,7 +84,9 @@ module axi4_lite_master_wrapper #(
                 bready <= 1;
             end
             if (bready & bvalid) begin
+`ifdef VERBOSE
                 $display($time, " | master | ", "bresp : ", bresp);
+`endif
                 bready  <= 0;
                 awvalid <= 1;
                 awaddr  <= (awaddr + 1) & 7;
@@ -89,13 +94,17 @@ module axi4_lite_master_wrapper #(
 
             if (arvalid & arready) begin
                 if (araddr == 0) begin
+`ifdef VERBOSE
                     $display($time, " | master | ", "res : ", res);
+`endif
                 end
                 arvalid <= 0;
                 rready  <= 1;
             end
             if (rready & rvalid) begin
+`ifdef VERBOSE
                 $display($time, " | master | ", "rcv rdata : ", rdata, " ind : %1d", araddr);
+`endif
                 inregs[araddr] <= rdata;
                 rready <= 0;
                 arvalid <= 1;

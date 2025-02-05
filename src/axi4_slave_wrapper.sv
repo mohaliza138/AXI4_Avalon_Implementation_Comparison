@@ -1,3 +1,4 @@
+`include "src/flags.svh"
 module axi4_slave_wrapper #(
     parameter int SZ  = 32,
     parameter int ASZ = 2,
@@ -96,7 +97,9 @@ module axi4_slave_wrapper #(
                 wready <= 1;  // begin data write
             end
             if (wready & wvalid) begin  // writing
+`ifdef VERBOSE
                 $display($time, " | slave | ", "rcv wdata : ", wdata, " ind : %1d", wpos);
+`endif
                 inregs[wpos] <= wdata;  // write to selected byte of input
                 wpos <= wpos + 1;
             end
@@ -112,7 +115,9 @@ module axi4_slave_wrapper #(
 
 
             if (arready & arvalid & mulready) begin
+`ifdef VERBOSE
                 $display($time, " | slave | ", "snd rdata : ", outregs[0], " ind : %1d", 0);
+`endif
                 araddr_reg <= araddr;
                 arready <= 0;  // end addr read
                 rdata <= outregs[0];  // begin data read
@@ -122,7 +127,9 @@ module axi4_slave_wrapper #(
                 rlast <= 0;
             end
             if (rready & rvalid) begin
+`ifdef VERBOSE
                 $display($time, " | slave | ", "snd rdata : ", outregs[rpos], " ind : %1d", rpos);
+`endif
                 rdata <= outregs[rpos];
                 rpos  <= rpos + 1;
                 rlast <= rpos == (2 * SZ / DSZ - 1);

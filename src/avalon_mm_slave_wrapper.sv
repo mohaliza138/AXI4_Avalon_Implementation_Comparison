@@ -1,17 +1,18 @@
+`include "src/flags.svh"
 module avalon_mm_slave_wrapper #(
     parameter int SZ = 32
 ) (
     input _rst,
     input clk,
-    input [3:0]addr, // A1 A0 B1 B0 C3 C2 C1 C0
+    input [3:0] addr,  // A1 A0 B1 B0 C3 C2 C1 C0
     input read,
     input write,
-    input [15:0]write_data,
-    output reg [15:0]read_data
+    input [15:0] write_data,
+    output reg [15:0] read_data
 );
 
-    reg [SZ-1:0] areg;
-    reg [SZ-1:0] breg;
+    reg  [  SZ-1:0] areg;
+    reg  [  SZ-1:0] breg;
 
     wire [2*SZ-1:0] res;
 
@@ -77,15 +78,15 @@ module avalon_mm_master_wrapper #(
 ) (
     input _rst,
     input clk,
-    input [31:0]A,
-    input [31:0]B,
-    input [15:0]read_data,
+    input [31:0] A,
+    input [31:0] B,
+    input [15:0] read_data,
     output out_clk,
-    output reg [63:0]res,
-    output reg [3:0]addr, // A1 A0 B1 B0 C3 C2 C1 C0
+    output reg [63:0] res,
+    output reg [3:0] addr,  // A1 A0 B1 B0 C3 C2 C1 C0
     output reg read,
     output reg write,
-    output reg [15:0]write_data
+    output reg [15:0] write_data
 );
 
     assign out_clk = clk;
@@ -132,14 +133,14 @@ module avalon_mm_master_wrapper #(
             end
             else if (state == 4) begin
                 state <= 5;
-                addr <= 4;
-                read <= 1;
+                addr  <= 4;
+                read  <= 1;
                 write <= 0;
             end
             else if (state == 5) begin
                 state <= 6;
-                addr <= 5;
-                read <= 1;
+                addr  <= 5;
+                read  <= 1;
                 write <= 0;
             end
             else if (state == 6) begin
@@ -148,7 +149,9 @@ module avalon_mm_master_wrapper #(
                 read <= 1;
                 write <= 0;
                 res[15:0] <= read_data;
-                $display("%b",res);
+`ifdef VERBOSE
+                $display("%b", res);
+`endif
             end
             else if (state == 7) begin
                 state <= 8;
@@ -156,7 +159,9 @@ module avalon_mm_master_wrapper #(
                 read <= 1;
                 write <= 0;
                 res[31:16] <= read_data;
-                $display("%b",res);
+`ifdef VERBOSE
+                $display("%b", res);
+`endif
             end
             else if (state == 8) begin
                 state <= 9;
@@ -164,7 +169,9 @@ module avalon_mm_master_wrapper #(
                 read <= 0;
                 write <= 0;
                 res[47:32] <= read_data;
-                $display("%b, %b",res, read_data);
+`ifdef VERBOSE
+                $display("%b, %b", res, read_data);
+`endif
             end
             else if (state == 9) begin
                 state <= 0;
@@ -172,7 +179,9 @@ module avalon_mm_master_wrapper #(
                 read <= 0;
                 write <= 0;
                 res[63:48] <= read_data;
-                $display("%b",res);
+`ifdef VERBOSE
+                $display("%b", res);
+`endif
             end
         end
     end

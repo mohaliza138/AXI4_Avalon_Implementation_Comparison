@@ -1,3 +1,4 @@
+`include "src/flags.svh"
 module axi4_lite_slave_wrapper #(
     parameter int SZ  = 32,
     parameter int ASZ = 4,
@@ -88,7 +89,9 @@ module axi4_lite_slave_wrapper #(
                 wready <= 1;  // begin data write
             end
             if (wready & wvalid) begin  // writing
+`ifdef VERBOSE
                 $display($time, " | slave | ", "rcv wdata : ", wdata, " ind : %1d", awaddr_reg);
+`endif
                 inregs[awaddr_reg] <= wdata;  // write to selected byte of input
                 wready <= 0;  // end data write
                 bresp <= 1;  // begin write resp
@@ -101,8 +104,10 @@ module axi4_lite_slave_wrapper #(
 
 
             if (arready & arvalid & mulready) begin
+`ifdef VERBOSE
                 $display($time, " | slave | ", "snd rdata : ", outregs[araddr], " ind : %1d",
                          araddr);
+`endif
                 araddr_reg <= araddr;
                 arready <= 0;  // end addr read
                 rdata <= outregs[araddr];  // begin data read
