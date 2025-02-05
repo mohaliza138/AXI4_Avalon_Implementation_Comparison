@@ -1,7 +1,6 @@
 module axi4_tb;
     localparam int SZ = 32;
     localparam int DSZ = 8;
-    localparam int ASZ = 2;
 
     reg _rst;
     reg clk;
@@ -9,35 +8,24 @@ module axi4_tb;
     reg [SZ-1:0] a;
     reg [SZ-1:0] b;
     wire [2*SZ-1:0] res;
-    // AW
-    wire [ASZ-1:0] awaddr;
-    wire awvalid;
-    wire awready;
-    // W
-    wire [DSZ-1:0] wdata;
-    wire wvalid;
-    wire wready;
-    wire wlast;
-    // B
-    wire bresp;  // 1 => ok
-    wire bvalid;
-    wire bready;
-    // AR
-    wire [ASZ-1:0] araddr;
-    wire arvalid;
-    wire arready;
-    // R
-    wire [DSZ-1:0] rdata;
-    wire rvalid;
-    wire rready;
-    wire rlast;
-    wire rresp;
+    // T to master
+    wire [DSZ-1:0] tdata_to_master;
+    wire tvalid_to_master;
+    wire tready_to_master;
+    wire tlast_to_master;
+    // wire tid_to_master;
+    // T to slave
+    wire [DSZ-1:0] tdata_to_slave;
+    wire tvalid_to_slave;
+    wire tready_to_slave;
+    wire tlast_to_slave;
+    // wire tid_to_slave;
 
 
-    axi4_master_wrapper #(
+
+    axi4_stream_master_wrapper #(
         .SZ (SZ),
-        .DSZ(DSZ),
-        .ASZ(ASZ)
+        .DSZ(DSZ)
     ) master (
         ._rst(_rst),
         .clk(clk),
@@ -46,60 +34,31 @@ module axi4_tb;
         .b(b),
         .res(res),
 
-        .awaddr (awaddr),
-        .awvalid(awvalid),
-        .awready(awready),
-
-        .wdata (wdata),
-        .wvalid(wvalid),
-        .wready(wready),
-        .wlast (wlast),
-
-        .bresp (bresp),
-        .bvalid(bvalid),
-        .bready(bready),
-
-        .araddr (araddr),
-        .arvalid(arvalid),
-        .arready(arready),
-
-        .rdata (rdata),
-        .rvalid(rvalid),
-        .rready(rready),
-        .rlast (rlast),
-        .rresp (rresp)
+        .tdata_to_master (tdata_to_master),
+        .tlast_to_master (tlast_to_master),
+        .tvalid_to_master(tvalid_to_master),
+        .tready_to_master(tready_to_master),
+        .tdata_to_slave  (tdata_to_slave),
+        .tlast_to_slave  (tlast_to_slave),
+        .tvalid_to_slave (tvalid_to_slave),
+        .tready_to_slave (tready_to_slave)
     );
 
-    axi4_slave_wrapper #(
+    axi4_stream_slave_wrapper #(
         .SZ (SZ),
-        .DSZ(DSZ),
-        .ASZ(ASZ)
+        .DSZ(DSZ)
     ) slave (
         ._rst(_rst),
         .clk (out_clk),
 
-        .awaddr (awaddr),
-        .awvalid(awvalid),
-        .awready(awready),
-
-        .wdata (wdata),
-        .wvalid(wvalid),
-        .wready(wready),
-        .wlast (wlast),
-
-        .bresp (bresp),
-        .bvalid(bvalid),
-        .bready(bready),
-
-        .araddr (araddr),
-        .arvalid(arvalid),
-        .arready(arready),
-
-        .rdata (rdata),
-        .rvalid(rvalid),
-        .rready(rready),
-        .rlast (rlast),
-        .rresp (rresp)
+        .tdata_to_master (tdata_to_master),
+        .tlast_to_master (tlast_to_master),
+        .tvalid_to_master(tvalid_to_master),
+        .tready_to_master(tready_to_master),
+        .tdata_to_slave  (tdata_to_slave),
+        .tlast_to_slave  (tlast_to_slave),
+        .tvalid_to_slave (tvalid_to_slave),
+        .tready_to_slave (tready_to_slave)
     );
 
     initial begin
@@ -115,7 +74,7 @@ module axi4_tb;
         #8 _rst = 1;  // official start
         a = 12551;
         b = 41245;
-        #64 $finish();
+        #256 $finish();
     end
 
 endmodule

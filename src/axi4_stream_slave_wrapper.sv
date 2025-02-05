@@ -1,36 +1,24 @@
-module axi4_slave_wrapper #(
+module axi4_stream_slave_wrapper #(
     parameter int SZ  = 32,
-    parameter int ASZ = 2,
     parameter int DSZ = 8
 ) (
     input _rst,
     input clk,
-    // AW
-    input [ASZ-1:0] awaddr,
-    input awvalid,
-    output reg awready,
-    // W
-    input [DSZ-1:0] wdata,
-    input wvalid,
-    output reg wready,
-    input wlast,
-    // B
-    output reg bresp,  // 1 => ok
-    output reg bvalid,
-    input bready,
-    // AR
-    input [ASZ-1:0] araddr,
-    input arvalid,
-    output reg arready,
-    // R
-    output reg [DSZ-1:0] rdata,
-    output reg rvalid,
-    input rready,
-    output reg rlast,
-    output reg rresp  // 1 => ok
+    // T to master
+    output reg [DSZ-1:0] tdata_to_master,
+    output reg tvalid_to_master,
+    input tready_to_master,
+    output reg tlast_to_master,
+    // output reg tid_to_master,
+    // T to slave
+    input [DSZ-1:0] tdata_to_slave,
+    input tvalid_to_slave,
+    output reg tready_to_slave,
+    input tlast_to_slave
+    // input tid_to_slave
 );
 
-    reg [DSZ-1:0] inregs[(1<<ASZ) * (SZ/DSZ)];
+    reg [DSZ-1:0] inregs[2 * (SZ/DSZ)];
     reg start;
 
     wire [DSZ-1:0] outregs[2*SZ/DSZ];
@@ -58,8 +46,6 @@ module axi4_slave_wrapper #(
         .clk(clk)
     );
 
-    reg [ASZ-1:0] awaddr_reg;
-    reg [ASZ-1:0] araddr_reg;
     reg [7:0] wpos;
     reg [7:0] rpos;
 
@@ -69,72 +55,31 @@ module axi4_slave_wrapper #(
             // zero all regs
             wpos <= 0;
             rpos <= 0;
-            awaddr_reg <= 0;
-            araddr_reg <= 0;
-            for (i = 0; i < (1 << ASZ) * (SZ / DSZ); i = i + 1) begin
+            for (i = 0; i < 2 * (SZ / DSZ); i = i + 1) begin
                 inregs[i] <= 0;
             end
-            start   <= 1;
+            start <= 1;
 
-            wready  <= 0;
-            bresp   <= 0;
-            bvalid  <= 0;
-            rdata   <= 0;
-            rvalid  <= 0;
-            rlast   <= 0;
-            rresp   <= 0;
+            tdata_to_master <= 0;
+            tvalid_to_master <= 0;
+            tlast_to_master <= 0;
 
-
-            awready <= 1;  // accept write req
-            arready <= 1;  // accept read req
+            tready_to_slave <= 1;
+            tvalid_to_master <= 1;  // just to start the transmit loop
         end
         else begin
-            if (awready & awvalid) begin
-                awaddr_reg <= awaddr;
-                wpos <= awaddr * (SZ / DSZ);
-                awready <= 0;  // end addr read
-                wready <= 1;  // begin data write
-            end
-            if (wready & wvalid) begin  // writing
-                $display($time, " | slave | ", "rcv wdata : ", wdata, " ind : %1d", wpos);
-                inregs[wpos] <= wdata;  // write to selected byte of input
-                wpos <= wpos + 1;
-            end
-            if (wready & wvalid & wlast) begin
-                wready <= 0;  // end data write
-                bresp  <= 1;  // begin write resp
-                bvalid <= 1;
-            end
-            if (bready & bvalid) begin
-                bvalid  <= 0;  // end write resp
-                awready <= 1;  // begin addr read
+            if (tready_to_slave & tvalid_to_slave) begin
+                $display($time, " | slave | ", "rcv tdata : ", tdata_to_slave, " ind : %1d", wpos);
+                inregs[wpos] <= tdata_to_slave;
+                wpos <= tlast_to_slave ? 0 : wpos + 1;
             end
 
-
-            if (arready & arvalid & mulready) begin
-                $display($time, " | slave | ", "snd rdata : ", outregs[0], " ind : %1d", 0);
-                araddr_reg <= araddr;
-                arready <= 0;  // end addr read
-                rdata <= outregs[0];  // begin data read
-                rpos <= 0 + 1;
-                rvalid <= 1;
-                rresp <= 1;
-                rlast <= 0;
+            if (tready_to_master & tvalid_to_master) begin
+                $display($time, " | slave | ", "snd tdata : ", outregs[rpos], " ind : %1d", rpos);
+                tdata_to_master <= outregs[rpos];
+                rpos <= (rpos + 1) & 7;
+                tlast_to_master <= rpos == 7;
             end
-            if (rready & rvalid) begin
-                $display($time, " | slave | ", "snd rdata : ", outregs[rpos], " ind : %1d", rpos);
-                rdata <= outregs[rpos];
-                rpos  <= rpos + 1;
-                rlast <= rpos == (2 * SZ / DSZ - 1);
-            end
-            if (rready & rvalid & rlast) begin
-                rvalid  <= 0;  // end data read
-                rdata   <= 0;
-                rlast   <= 0;
-                rresp   <= 0;
-                arready <= 1;  // begin addr read
-            end
-
         end
     end
 
