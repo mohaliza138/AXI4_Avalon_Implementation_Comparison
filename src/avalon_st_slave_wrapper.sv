@@ -52,13 +52,11 @@ module avalon_st_slave_wrapper (
                 else begin
                     receive_state <= 0;
                     ready_out <= 1;
-                    A <= 0;
-                    B <= 0;
                     isA <= 0;
                 end
             end
             if (receive_state == 1) begin
-                if (startofpacket_in == 1) begin
+                if (valid_in == 1) begin
                     receive_state <= 2;
                     ready_out <= 1;
                     if (isA == 1) begin
@@ -71,13 +69,11 @@ module avalon_st_slave_wrapper (
                 else begin
                     receive_state <= 0;
                     ready_out <= 1;
-                    A <= 0;
-                    B <= 0;
                     isA <= 0;
                 end
             end
             if (receive_state == 2) begin
-                if (startofpacket_in == 1) begin
+                if (valid_in == 1) begin
                     receive_state <= 3;
                     ready_out <= 1;
                     if (isA == 1) begin
@@ -90,13 +86,11 @@ module avalon_st_slave_wrapper (
                 else begin
                     receive_state <= 0;
                     ready_out <= 1;
-                    A <= 0;
-                    B <= 0;
                     isA <= 0;
                 end
             end
             if (receive_state == 3) begin
-                if (startofpacket_in == 1) begin
+                if (valid_in == 1) begin
                     receive_state <= 4;
                     ready_out <= 1;
                     if (isA == 1) begin
@@ -109,13 +103,11 @@ module avalon_st_slave_wrapper (
                 else begin
                     receive_state <= 0;
                     ready_out <= 1;
-                    A <= 0;
-                    B <= 0;
                     isA <= 0;
                 end
             end
             if (receive_state == 4) begin
-                if (startofpacket_in == 1) begin
+                if (valid_in == 1) begin
                     receive_state <= 0;
                     ready_out <= 1;
                     if (isA == 1) begin
@@ -128,8 +120,6 @@ module avalon_st_slave_wrapper (
                 else begin
                     receive_state <= 0;
                     ready_out <= 1;
-                    A <= 0;
-                    B <= 0;
                     isA <= 0;
                 end
             end
