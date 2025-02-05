@@ -1,8 +1,10 @@
 ./src/avalon_mm_slave_wrapper.sv
 ./src/avalon_st_slave_wrapper.sv
 ./src/axi4_lite_slave_wrapper.sv
+./src/axi4_master_wrapper.sv
 ./src/axi4_slave_wrapper.sv
 ./src/axi4_stream_slave_wrapper.sv
+./src/axi4_tb.sv
 ./src/mult.sv
 ./src/mult_tb.sv
 ./src/tb.sv

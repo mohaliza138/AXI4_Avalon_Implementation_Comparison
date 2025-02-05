@@ -1,27 +1,27 @@
-module AVALON_STREAM_MASTER (
-    input [31:0]A,
-    input [31:0]B,
-    input clk_in,
-    input rst,
+module avalon_st_master_wrapper (
+    input [31:0] A,
+    input [31:0] B,
+    input clk,
+    input _rst,
     input ready_in,
     input startofpacket_in,
     input endofpacket_in,
-    input [7:0]data_in,
+    input [7:0] data_in,
     input valid_in,
-    output clk_out,
+    output out_clk,
     output reg startofpacket_out,
     output reg endofpacket_out,
-    output reg [7:0]data_out,
+    output reg [7:0] data_out,
     output reg ready_out,
-    output reg [63:0]RES,
+    output reg [63:0] RES,
     output reg ready_res,
     output reg valid_out
 );
     reg [7:0] send_state;
     reg [7:0] receive_state;
-    assign clk_out = clk_in;
-    always @(posedge clk_in, negedge rst) begin
-        if (!rst) begin
+    assign out_clk = clk;
+    always @(posedge clk, negedge _rst) begin
+        if (!_rst) begin
             send_state <= 0;
             startofpacket_out <= 0;
             endofpacket_out <= 0;
@@ -215,9 +215,9 @@ module AVALON_STREAM_MASTER (
     end
 
 
-    
-    always @(posedge clk_in, negedge rst) begin
-        if (!rst) begin
+
+    always @(posedge clk, negedge _rst) begin
+        if (!_rst) begin
             receive_state <= 0;
             ready_res <= 0;
             RES <= 0;
