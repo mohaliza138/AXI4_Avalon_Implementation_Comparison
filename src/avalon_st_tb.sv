@@ -21,6 +21,7 @@ module axi4_tb;
     wire [7:0] data_to_slave;
     wire ready_to_slave;
     wire valid_to_slave;
+    wire result_is_ready;
 
 
     avalon_st_master_wrapper master (
@@ -30,6 +31,7 @@ module axi4_tb;
         .A(a),
         .B(b),
         .RES(res),
+        .ready_res(Result_is_ready),
 
         .startofpacket_in(startofpacket_to_master),
         .startofpacket_out(startofpacket_to_slave),
@@ -71,9 +73,17 @@ module axi4_tb;
     initial begin
         $monitor($time, " | tb | ", a, " * ", b, " => ", res);
         #8 _rst = 1;  // official start
-        a = 1;
-        b = 2;
-        #400 $finish();
+        a = 10234;
+        b = 566;
+        
+        #100;
+        
+        a = 32;
+        b = 12;
+        
+        #100;
+        
+        $stop();
     end
 
 endmodule
