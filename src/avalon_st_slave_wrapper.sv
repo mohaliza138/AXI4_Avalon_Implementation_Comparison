@@ -1,39 +1,37 @@
-module avalon_st_slave_wrapper#(
-    parameter int SZ = 32
-) (
-    input clk_in,
-    input rst,
+module avalon_st_slave_wrapper (
+    input clk,
+    input _rst,
     input ready_in,
     input startofpacket_in,
     input endofpacket_in,
-    input [7:0]data_in,
+    input [7:0] data_in,
     input valid_in,
     output reg startofpacket_out,
     output reg endofpacket_out,
-    output reg [7:0]data_out,
+    output reg [7:0] data_out,
     output reg ready_out,
     output reg valid_out
 );
 
-    reg [31:0] A;
-    reg [31:0] B;
+    reg  [31:0] A;
+    reg  [31:0] B;
     wire [63:0] C;
-    
+
     mult #(
-        .SZ(SZ)
+        .SZ(32)
     ) main_module (
         .a(A),
         .b(B),
         .res(C),
-        ._rst(rst),
-        .clk(clk_in)
+        ._rst(_rst),
+        .clk(clk)
     );
 
     reg isA;
     reg [7:0] receive_state;
     reg [7:0] send_state;
-    always @(posedge clk_in, negedge rst) begin
-        if (!rst) begin
+    always @(posedge clk, negedge _rst) begin
+        if (!_rst) begin
             receive_state <= 0;
             ready_out <= 1;
             A <= 0;
@@ -65,7 +63,7 @@ module avalon_st_slave_wrapper#(
                     ready_out <= 1;
                     if (isA == 1) begin
                         A[31:24] <= data_in;
-                    end 
+                    end
                     else begin
                         B[31:24] <= data_in;
                     end
@@ -84,7 +82,7 @@ module avalon_st_slave_wrapper#(
                     ready_out <= 1;
                     if (isA == 1) begin
                         A[23:16] <= data_in;
-                    end 
+                    end
                     else begin
                         B[23:16] <= data_in;
                     end
@@ -103,7 +101,7 @@ module avalon_st_slave_wrapper#(
                     ready_out <= 1;
                     if (isA == 1) begin
                         A[15:8] <= data_in;
-                    end 
+                    end
                     else begin
                         B[15:8] <= data_in;
                     end
@@ -122,7 +120,7 @@ module avalon_st_slave_wrapper#(
                     ready_out <= 1;
                     if (isA == 1) begin
                         A[7:0] <= data_in;
-                    end 
+                    end
                     else begin
                         B[7:0] <= data_in;
                     end
@@ -139,8 +137,8 @@ module avalon_st_slave_wrapper#(
     end
 
 
-    always @(posedge clk_in, negedge rst) begin
-        if (!rst) begin
+    always @(posedge clk, negedge _rst) begin
+        if (!_rst) begin
             send_state <= 0;
             startofpacket_out <= 0;
             endofpacket_out <= 0;
@@ -288,3 +286,4 @@ module avalon_st_slave_wrapper#(
         end
     end
 endmodule
+
